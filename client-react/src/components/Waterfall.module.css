@@ -1,0 +1,67 @@
+.wrap { padding: 12px 16px; }
+
+.empty {
+  padding: 24px 16px;
+  text-align: center;
+  color: var(--text-muted);
+  font-size: 0.85rem;
+}
+
+.header {
+  display: grid;
+  grid-template-columns: 100px 1fr 54px;
+  gap: 8px;
+  font-size: 0.68rem;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  padding-bottom: 6px;
+  border-bottom: 1px solid var(--border);
+  margin-bottom: 3px;
+}
+
+.rows { max-height: 420px; overflow-y: auto; }
+
+.row {
+  display: grid;
+  grid-template-columns: 100px 1fr 54px;
+  gap: 8px;
+  align-items: center;
+  padding: 2px 0;
+  font-size: 0.77rem;
+}
+
+.label {
+  color: var(--text-muted);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.barWrap {
+  position: relative;
+  height: 16px;
+  background: var(--surface2);
+  border-radius: 3px;
+  overflow: hidden;
+}
+
+.bar {
+  position: absolute;
+  height: 100%;
+  border-radius: 3px;
+  min-width: 2px;
+}
+
+.barH1       { background: rgba(239, 68,  68,  0.75); }
+.barH2       { background: rgba(59,  130, 246, 0.75); }
+.barTimeout  { background: rgba(245, 158, 11,  0.75); border: 1px solid #f59e0b; }
+.barError    { background: rgba(239, 68,  68,  0.4);  border: 1px dashed #ef4444; }
+.barPending  { background: var(--surface2); border: 1px dashed var(--border); width: 100% !important; left: 0 !important; }
+
+.dur {
+  text-align: right;
+  color: var(--text-muted);
+  font-size: 0.73rem;
+  font-variant-numeric: tabular-nums;
+}

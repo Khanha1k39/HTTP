@@ -1,0 +1,25 @@
+{
+  "name": "http-demo",
+  "version": "1.0.0",
+  "description": "Demo so sánh HTTP/1.1 vs HTTP/2 — React + Waterfall visualization",
+  "scripts": {
+    "start": "node start.js",
+    "dev": "node start.js",
+    "client": "cd client-react && npm run dev",
+    "build:client": "cd client-react && npm run build",
+    "server:h1": "node server/http1-server.js",
+    "server:h2": "node server/http2-server.js",
+    "gen:assets": "node server/gen-assets.js",
+    "gen:cert": "node server/gen-cert.js"
+  },
+  "keywords": [
+    "http1",
+    "http2",
+    "demo",
+    "multiplexing",
+    "react",
+    "vite"
+  ],
+  "author": "HTTP Demo",
+  "license": "MIT"
+}

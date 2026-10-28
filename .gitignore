@@ -1,0 +1,27 @@
+# Dependencies
+node_modules/
+client-react/node_modules/
+
+# Production build
+client-react/dist/
+client-react/dist-ssr/
+
+# Environment files
+.env
+.env.*
+!.env.example
+
+# Logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# Editor & OS files
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
+*.swp
+*.swo

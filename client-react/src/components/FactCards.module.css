@@ -1,0 +1,20 @@
+.grid {
+  max-width: 900px;
+  margin: 16px auto 40px;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+  gap: 12px;
+}
+
+.card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 14px 16px;
+}
+
+.icon  { font-size: 1.4rem; margin-bottom: 6px; }
+.title { font-size: 0.85rem; font-weight: 700; margin-bottom: 4px; color: #a78bfa; }
+
+.card p { font-size: 0.78rem; color: var(--text-muted); line-height: 1.55; }
+.card p strong { color: var(--text); }

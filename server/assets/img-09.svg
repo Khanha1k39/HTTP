@@ -1,0 +1,31 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="200" height="200" viewBox="0 0 200 200">
+  <defs>
+    <linearGradient id="grad9" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#BB8FCE;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#BB8FCECC;stop-opacity:1" />
+    </linearGradient>
+    <filter id="shadow9">
+      <feDropShadow dx="2" dy="2" stdDeviation="3" flood-color="rgba(0,0,0,0.3)"/>
+    </filter>
+  </defs>
+  
+  <!-- Background -->
+  <rect width="200" height="200" rx="16" fill="url(#grad9)"/>
+  
+  <!-- Pattern -->
+  <circle cx="100" cy="100" r="90" fill="none" stroke="rgba(255,255,255,0.2)" stroke-width="2"/>
+  <circle cx="100" cy="100" r="75" fill="none" stroke="rgba(255,255,255,0.1)" stroke-width="1"/>
+  
+  <!-- Number badge -->
+  <circle cx="180" cy="20" r="14" fill="rgba(0,0,0,0.3)" filter="url(#shadow9)"/>
+  <text x="180" y="25" font-family="Arial, sans-serif" font-size="12" font-weight="bold" 
+        fill="white" text-anchor="middle">9</text>
+  
+  <!-- Icon (as text) -->
+  <text x="100" y="105" font-size="66.66666666666667" text-anchor="middle" dominant-baseline="middle">🌟</text>
+  
+  <!-- Label -->
+  <text x="100" y="188" font-family="Arial, sans-serif" font-size="11" font-weight="500"
+        fill="rgba(255,255,255,0.9)" text-anchor="middle">img-09</text>
+</svg>
+<!--                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                     -->

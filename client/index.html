@@ -1,0 +1,686 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>HTTP/1.1 vs HTTP/2 — Demo</title>
+  <style>
+    :root {
+      --h1-color: #ef4444;
+      --h2-color: #3b82f6;
+      --bg: #0f172a;
+      --surface: #1e293b;
+      --surface2: #334155;
+      --text: #f1f5f9;
+      --text-muted: #94a3b8;
+      --border: #475569;
+      --radius: 12px;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+      padding: 24px;
+    }
+
+    /* ── Header ── */
+    header {
+      text-align: center;
+      margin-bottom: 32px;
+    }
+    header h1 {
+      font-size: clamp(1.5rem, 4vw, 2.5rem);
+      font-weight: 800;
+      letter-spacing: -0.5px;
+      margin-bottom: 8px;
+    }
+    header h1 span.h1 { color: var(--h1-color); }
+    header h1 span.h2 { color: var(--h2-color); }
+    header h1 span.vs {
+      color: var(--text-muted);
+      font-size: 0.8em;
+      margin: 0 12px;
+    }
+    header p {
+      color: var(--text-muted);
+      font-size: 0.95rem;
+    }
+
+    /* ── Controls ── */
+    .controls {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 28px;
+      flex-wrap: wrap;
+    }
+
+    .btn {
+      padding: 10px 24px;
+      border: none;
+      border-radius: 8px;
+      font-size: 0.95rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .btn:disabled { opacity: 0.5; cursor: not-allowed; }
+    .btn-primary {
+      background: linear-gradient(135deg, #6366f1, #8b5cf6);
+      color: white;
+    }
+    .btn-primary:hover:not(:disabled) {
+      background: linear-gradient(135deg, #4f46e5, #7c3aed);
+      transform: translateY(-1px);
+      box-shadow: 0 4px 16px rgba(99,102,241,0.4);
+    }
+    .btn-reset {
+      background: var(--surface2);
+      color: var(--text-muted);
+    }
+    .btn-reset:hover:not(:disabled) {
+      background: var(--border);
+      color: var(--text);
+    }
+
+    .image-count-label {
+      color: var(--text-muted);
+      font-size: 0.85rem;
+    }
+    .image-count-label input[type=range] {
+      accent-color: #6366f1;
+      cursor: pointer;
+    }
+
+    /* ── Notice ── */
+    .notice {
+      background: #1e3a5f;
+      border: 1px solid #3b82f6;
+      border-radius: var(--radius);
+      padding: 12px 16px;
+      color: #93c5fd;
+      font-size: 0.85rem;
+      max-width: 700px;
+      margin: 0 auto 28px;
+      text-align: center;
+      line-height: 1.6;
+    }
+    .notice a { color: #60a5fa; }
+    .notice.hidden { display: none; }
+
+    /* ── Main layout ── */
+    .panels {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 20px;
+      max-width: 1400px;
+      margin: 0 auto;
+    }
+
+    @media (max-width: 768px) {
+      .panels { grid-template-columns: 1fr; }
+    }
+
+    .panel {
+      background: var(--surface);
+      border-radius: var(--radius);
+      overflow: hidden;
+      border: 1px solid var(--border);
+    }
+
+    .panel-header {
+      padding: 16px 20px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .panel-title {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .protocol-badge {
+      font-size: 0.75rem;
+      font-weight: 700;
+      padding: 3px 10px;
+      border-radius: 999px;
+      letter-spacing: 0.5px;
+      text-transform: uppercase;
+    }
+    .badge-h1 {
+      background: rgba(239,68,68,0.2);
+      color: var(--h1-color);
+      border: 1px solid rgba(239,68,68,0.4);
+    }
+    .badge-h2 {
+      background: rgba(59,130,246,0.2);
+      color: var(--h2-color);
+      border: 1px solid rgba(59,130,246,0.4);
+    }
+
+    .panel-title h2 { font-size: 1rem; font-weight: 700; }
+
+    /* ── Stats bar ── */
+    .stats-bar {
+      display: flex;
+      gap: 16px;
+      flex-wrap: wrap;
+    }
+    .stat {
+      text-align: right;
+    }
+    .stat-label {
+      font-size: 0.7rem;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+    .stat-value {
+      font-size: 1.1rem;
+      font-weight: 700;
+      font-variant-numeric: tabular-nums;
+    }
+    .stat-value.loading { color: #fbbf24; }
+    .stat-value.done-h1 { color: var(--h1-color); }
+    .stat-value.done-h2 { color: var(--h2-color); }
+
+    /* ── Progress bar ── */
+    .progress-wrap {
+      height: 3px;
+      background: var(--surface2);
+    }
+    .progress-bar {
+      height: 100%;
+      width: 0%;
+      transition: width 0.1s;
+    }
+    .progress-h1 { background: var(--h1-color); }
+    .progress-h2 { background: var(--h2-color); }
+
+    /* ── Waterfall ── */
+    .waterfall-container {
+      padding: 16px;
+      overflow-y: auto;
+      max-height: 480px;
+    }
+
+    .waterfall-header {
+      display: grid;
+      grid-template-columns: 120px 1fr 70px;
+      gap: 8px;
+      font-size: 0.7rem;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      padding-bottom: 6px;
+      border-bottom: 1px solid var(--border);
+      margin-bottom: 4px;
+    }
+
+    .waterfall-row {
+      display: grid;
+      grid-template-columns: 120px 1fr 70px;
+      gap: 8px;
+      align-items: center;
+      padding: 3px 0;
+      font-size: 0.78rem;
+    }
+
+    .row-label {
+      color: var(--text-muted);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .row-bar-wrap {
+      position: relative;
+      height: 18px;
+      background: var(--surface2);
+      border-radius: 3px;
+      overflow: hidden;
+    }
+
+    .row-bar {
+      position: absolute;
+      height: 100%;
+      border-radius: 3px;
+      transition: width 0.05s;
+      display: flex;
+      align-items: center;
+      padding-left: 4px;
+      font-size: 0.65rem;
+      color: rgba(255,255,255,0.8);
+      white-space: nowrap;
+      overflow: hidden;
+    }
+
+    .bar-h1 { background: rgba(239,68,68,0.7); }
+    .bar-h2 { background: rgba(59,130,246,0.7); }
+    .bar-pending { background: var(--surface2); border: 1px dashed var(--border); }
+
+    .row-duration {
+      color: var(--text-muted);
+      font-size: 0.75rem;
+      text-align: right;
+      font-variant-numeric: tabular-nums;
+    }
+
+    /* ── Images grid ── */
+    .images-section {
+      padding: 16px;
+      border-top: 1px solid var(--border);
+    }
+    .images-section h3 {
+      font-size: 0.8rem;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      margin-bottom: 10px;
+    }
+    .images-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(60px, 1fr));
+      gap: 6px;
+    }
+
+    .img-slot {
+      aspect-ratio: 1;
+      border-radius: 8px;
+      background: var(--surface2);
+      overflow: hidden;
+      position: relative;
+      border: 1px solid var(--border);
+      transition: transform 0.2s;
+    }
+    .img-slot:hover { transform: scale(1.05); }
+
+    .img-slot img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      opacity: 0;
+      transition: opacity 0.3s;
+    }
+    .img-slot img.loaded { opacity: 1; }
+
+    .img-slot .spinner {
+      position: absolute;
+      inset: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 0.6rem;
+      color: var(--text-muted);
+    }
+    .img-slot .spinner.hidden { display: none; }
+
+    /* ── Summary card ── */
+    .summary {
+      max-width: 900px;
+      margin: 24px auto 0;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 20px 24px;
+    }
+    .summary h2 {
+      font-size: 1rem;
+      margin-bottom: 16px;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      font-size: 0.8rem;
+    }
+    .summary-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 16px;
+      margin-bottom: 20px;
+    }
+
+    @media (max-width: 560px) {
+      .summary-grid { grid-template-columns: 1fr; }
+    }
+
+    .summary-card {
+      border-radius: 10px;
+      padding: 16px;
+    }
+    .summary-card.h1-card { background: rgba(239,68,68,0.1); border: 1px solid rgba(239,68,68,0.3); }
+    .summary-card.h2-card { background: rgba(59,130,246,0.1); border: 1px solid rgba(59,130,246,0.3); }
+
+    .summary-card .proto-label {
+      font-size: 0.7rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      margin-bottom: 8px;
+    }
+    .h1-card .proto-label { color: var(--h1-color); }
+    .h2-card .proto-label { color: var(--h2-color); }
+
+    .summary-card .big-time {
+      font-size: 2rem;
+      font-weight: 800;
+      font-variant-numeric: tabular-nums;
+      margin-bottom: 4px;
+    }
+    .h1-card .big-time { color: var(--h1-color); }
+    .h2-card .big-time { color: var(--h2-color); }
+
+    .summary-card .detail {
+      font-size: 0.8rem;
+      color: var(--text-muted);
+    }
+
+    .speedup-box {
+      text-align: center;
+      padding: 16px;
+      background: rgba(99,102,241,0.1);
+      border: 1px solid rgba(99,102,241,0.3);
+      border-radius: 10px;
+    }
+    .speedup-box .speedup-label {
+      font-size: 0.75rem;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      margin-bottom: 4px;
+    }
+    .speedup-box .speedup-num {
+      font-size: 2.5rem;
+      font-weight: 800;
+      color: #a78bfa;
+    }
+    .speedup-box .speedup-desc {
+      font-size: 0.8rem;
+      color: var(--text-muted);
+      margin-top: 4px;
+    }
+
+    .summary.hidden { display: none; }
+
+    /* ── Facts ── */
+    .facts {
+      max-width: 900px;
+      margin: 16px auto 40px;
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+      gap: 12px;
+    }
+    .fact-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 14px 16px;
+    }
+    .fact-card .fact-icon { font-size: 1.4rem; margin-bottom: 6px; }
+    .fact-card .fact-title {
+      font-size: 0.85rem;
+      font-weight: 700;
+      margin-bottom: 4px;
+      color: #a78bfa;
+    }
+    .fact-card p { font-size: 0.78rem; color: var(--text-muted); line-height: 1.5; }
+    .fact-card strong { color: var(--text); }
+
+    .bar-timeout {
+      background: rgba(245,158,11,0.75) !important;
+      border: 1px solid #f59e0b !important;
+    }
+
+    /* ── Mode tabs ── */
+    .mode-tabs {
+      display: flex;
+      justify-content: center;
+      gap: 6px;
+      margin-bottom: 20px;
+    }
+
+    .mode-tab {
+      padding: 8px 20px;
+      border: 1px solid var(--border);
+      border-radius: 999px;
+      background: var(--surface);
+      color: var(--text-muted);
+      font-size: 0.88rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    .mode-tab:hover { background: var(--surface2); color: var(--text); }
+    .mode-tab.active {
+      background: #6366f1;
+      border-color: #6366f1;
+      color: white;
+      box-shadow: 0 0 16px rgba(99,102,241,0.4);
+    }
+    /* Single-panel mode: stretch to full width */
+    .panels.single { grid-template-columns: 1fr; max-width: 740px; margin-inline: auto; }
+
+    /* Spinner animation */
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+    .spin-icon {
+      display: inline-block;
+      animation: spin 1s linear infinite;
+    }
+  </style>
+</head>
+<body>
+
+<header>
+  <h1>
+    <span class="h1">HTTP/1.1</span>
+    <span class="vs">VS</span>
+    <span class="h2">HTTP/2</span>
+  </h1>
+  <p>So sánh hiệu năng tải ảnh song song — Multiplexing thực chiến</p>
+</header>
+
+<!-- Notice về self-signed cert -->
+<div class="notice" id="cert-notice">
+  ⚠️ <strong>Bước đầu tiên:</strong> Mở tab mới → truy cập
+  <a href="https://localhost:3002/ping" target="_blank">https://localhost:3002/ping</a>
+  → nhấn <strong>"Advanced" → "Proceed"</strong> để chấp nhận self-signed cert cho HTTP/2.
+  <br/>Sau đó quay lại đây và nhấn <strong>Bắt đầu Demo</strong>.
+</div>
+
+<!-- Mode tabs -->
+<div class="mode-tabs">
+  <button class="mode-tab active" data-mode="compare">
+    ⚖️ So sánh
+  </button>
+  <button class="mode-tab" data-mode="h1only">
+    🔴 HTTP/1.1 Only
+  </button>
+  <button class="mode-tab" data-mode="h2only">
+    🔵 HTTP/2 Only
+  </button>
+</div>
+
+<div class="controls">
+  <div class="image-count-label">
+    Số ảnh: <strong id="count-display">100</strong>
+    <input type="range" id="img-count" min="10" max="100" value="100" step="5" style="margin-left:8px; vertical-align:middle;">
+  </div>
+
+  <!-- Client timeout -->
+  <div class="image-count-label" title="Client hủy request nếu không có phản hồi sau thời gian này">
+    ⏱ Client timeout: <strong id="client-timeout-display">Tắt</strong>
+    <input type="range" id="client-timeout" min="0" max="3000" value="0" step="100" style="margin-left:8px; vertical-align:middle;">
+  </div>
+
+  <!-- Server delay giả lập -->
+  <div class="image-count-label" title="Server trì hoãn mỗi response (giả lập slow network)">
+    🐢 Server delay: <strong id="server-delay-display">Không</strong>
+    <input type="range" id="server-delay" min="0" max="2000" value="0" step="50" style="margin-left:8px; vertical-align:middle;">
+  </div>
+
+  <button class="btn btn-primary" id="btn-start">
+    <span>▶</span> Bắt đầu Demo
+  </button>
+  <button class="btn btn-reset" id="btn-reset" disabled>
+    ↺ Reset
+  </button>
+</div>
+
+<!-- Two panels -->
+<div class="panels">
+  <!-- HTTP/1.1 Panel -->
+  <div class="panel" id="panel-h1">
+    <div class="panel-header">
+      <div class="panel-title">
+        <span class="protocol-badge badge-h1">HTTP/1.1</span>
+        <h2>Tuần tự (max 6 conn)</h2>
+      </div>
+      <div class="stats-bar">
+        <div class="stat">
+          <div class="stat-label">Thời gian</div>
+          <div class="stat-value" id="h1-time">—</div>
+        </div>
+        <div class="stat">
+          <div class="stat-label">Loaded</div>
+          <div class="stat-value" id="h1-count">0/0</div>
+        </div>
+        <div class="stat">
+          <span id="h1-timeout-count" style="font-size:0.75rem;color:#f59e0b;display:none"></span>
+        </div>
+      </div>
+    </div>
+    <div class="progress-wrap">
+      <div class="progress-bar progress-h1" id="h1-progress"></div>
+    </div>
+
+    <!-- Waterfall -->
+    <div class="waterfall-container">
+      <div class="waterfall-header">
+        <span>Request</span>
+        <span>Timeline</span>
+        <span style="text-align:right">ms</span>
+      </div>
+      <div id="h1-waterfall"></div>
+    </div>
+
+    <!-- Images -->
+    <div class="images-section">
+      <h3>Ảnh đã tải</h3>
+      <div class="images-grid" id="h1-images"></div>
+    </div>
+  </div>
+
+  <!-- HTTP/2 Panel -->
+  <div class="panel" id="panel-h2">
+    <div class="panel-header">
+      <div class="panel-title">
+        <span class="protocol-badge badge-h2">HTTP/2</span>
+        <h2>Multiplexing (1 conn)</h2>
+      </div>
+      <div class="stats-bar">
+        <div class="stat">
+          <div class="stat-label">Thời gian</div>
+          <div class="stat-value" id="h2-time">—</div>
+        </div>
+        <div class="stat">
+          <div class="stat-label">Loaded</div>
+          <div class="stat-value" id="h2-count">0/0</div>
+        </div>
+        <div class="stat">
+          <span id="h2-timeout-count" style="font-size:0.75rem;color:#f59e0b;display:none"></span>
+        </div>
+      </div>
+    </div>
+    <div class="progress-wrap">
+      <div class="progress-bar progress-h2" id="h2-progress"></div>
+    </div>
+
+    <!-- Waterfall -->
+    <div class="waterfall-container">
+      <div class="waterfall-header">
+        <span>Request</span>
+        <span>Timeline</span>
+        <span style="text-align:right">ms</span>
+      </div>
+      <div id="h2-waterfall"></div>
+    </div>
+
+    <!-- Images -->
+    <div class="images-section">
+      <h3>Ảnh đã tải</h3>
+      <div class="images-grid" id="h2-images"></div>
+    </div>
+  </div>
+</div>
+
+<!-- Summary -->
+<div class="summary hidden" id="summary">
+  <h2>📊 Kết quả so sánh</h2>
+  <div class="summary-grid">
+    <div class="summary-card h1-card" id="sum-card-h1">
+      <div class="proto-label">HTTP/1.1</div>
+      <div class="big-time" id="sum-h1-time">—</div>
+      <div class="detail" id="sum-h1-detail">—</div>
+    </div>
+    <div class="summary-card h2-card" id="sum-card-h2">
+      <div class="proto-label">HTTP/2</div>
+      <div class="big-time" id="sum-h2-time">—</div>
+      <div class="detail" id="sum-h2-detail">—</div>
+    </div>
+  </div>
+  <div class="speedup-box" id="speedup-box">
+    <div class="speedup-label">⚡ HTTP/2 nhanh hơn</div>
+    <div class="speedup-num" id="speedup">—</div>
+    <div class="speedup-desc" id="speedup-desc">—</div>
+  </div>
+</div>
+
+<!-- Facts -->
+<div class="facts">
+  <div class="fact-card">
+    <div class="fact-icon">🔀</div>
+    <div class="fact-title">Multiplexing</div>
+    <p>HTTP/2 gửi <strong>nhiều request song song</strong> trên 1 TCP connection. HTTP/1.1 bị giới hạn <strong>6 connections</strong> mỗi domain.</p>
+  </div>
+  <div class="fact-card">
+    <div class="fact-icon">🗜️</div>
+    <div class="fact-title">Header Compression (HPACK)</div>
+    <p>HTTP/2 nén headers bằng HPACK, giảm <strong>85-95%</strong> kích thước header so với HTTP/1.1 plain text.</p>
+  </div>
+  <div class="fact-card">
+    <div class="fact-icon">⚙️</div>
+    <div class="fact-title">Binary Protocol</div>
+    <p>HTTP/2 dùng <strong>binary framing</strong> thay vì text, giúp parse nhanh hơn và ít lỗi hơn.</p>
+  </div>
+  <div class="fact-card">
+    <div class="fact-icon">🚦</div>
+    <div class="fact-title">Head-of-Line Blocking</div>
+    <p>HTTP/1.1 bị <strong>HOL blocking</strong>: request sau phải chờ request trước hoàn thành trên cùng connection.</p>
+  </div>
+  <div class="fact-card">
+    <div class="fact-icon">📡</div>
+    <div class="fact-title">Server Push</div>
+    <p>HTTP/2 cho phép server <strong>chủ động gửi</strong> tài nguyên trước khi client request (Server Push).</p>
+  </div>
+  <div class="fact-card">
+    <div class="fact-icon">🔒</div>
+    <div class="fact-title">HTTPS Required</div>
+    <p>Trên thực tế, HTTP/2 <strong>yêu cầu TLS</strong> trên hầu hết browser. HTTP/1.1 vẫn hoạt động qua HTTP thường.</p>
+  </div>
+</div>
+
+<script src="demo.js"></script>
+</body>
+</html>

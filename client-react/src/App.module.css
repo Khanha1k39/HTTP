@@ -1,0 +1,52 @@
+.page {
+  padding: 24px;
+  min-height: 100vh;
+}
+
+/* ── Header ── */
+.header {
+  text-align: center;
+  margin-bottom: 24px;
+}
+.header h1 {
+  font-size: clamp(1.5rem, 4vw, 2.5rem);
+  font-weight: 800;
+  letter-spacing: -0.5px;
+  margin-bottom: 8px;
+}
+.h1Label { color: #ef4444; }
+.h2Label { color: #3b82f6; }
+.vs      { color: var(--text-muted); font-size: 0.8em; margin: 0 12px; }
+.header p { color: var(--text-muted); font-size: 0.95rem; }
+
+/* ── Cert notice ── */
+.notice {
+  background: #1e3a5f;
+  border: 1px solid #3b82f6;
+  border-radius: 12px;
+  padding: 12px 16px;
+  color: #93c5fd;
+  font-size: 0.85rem;
+  max-width: 700px;
+  margin: 0 auto 24px;
+  text-align: center;
+  line-height: 1.6;
+}
+.notice a { color: #60a5fa; }
+
+/* ── Panels ── */
+.panels {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 20px;
+  max-width: 1400px;
+  margin: 0 auto;
+}
+.panels.single {
+  grid-template-columns: 1fr;
+  max-width: 740px;
+}
+
+@media (max-width: 768px) {
+  .panels { grid-template-columns: 1fr; }
+}
